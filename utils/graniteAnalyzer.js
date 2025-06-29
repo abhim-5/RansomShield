@@ -5,8 +5,8 @@ const path = require('path');
 const getIAMToken = require('./ibmAuth');
 
 const GRANITE_API_URL = 'https://us-south.ml.cloud.ibm.com/v2/inference';
-const GRANITE_MODEL_ID = 'granite-code-20b-instruct';
-const PROJECT_ID = process.env.IBM_PROJECT_ID; // ✅ required for v2
+const GRANITE_MODEL_ID = 'granite-code-20b-instruct'; // Change if needed
+const PROJECT_ID = process.env.IBM_PROJECT_ID;
 
 function buildRansomwarePrompt(filename, fileContent) {
   const safeContent = fileContent.slice(0, 4000);
@@ -41,7 +41,7 @@ module.exports = async function analyzeFileWithGranite(filename, codeText) {
       GRANITE_API_URL,
       {
         model_id: GRANITE_MODEL_ID,
-        input: [prompt], // 🟢 Must be an array of strings
+        input: [prompt],
         parameters: {
           decoding_method: "greedy",
           max_new_tokens: 350
@@ -68,7 +68,7 @@ module.exports = async function analyzeFileWithGranite(filename, codeText) {
     return {
       file: path.basename(filename),
       analysis: '⚠️ Error calling Granite API',
-      error: err.message
+      error: err.response?.data || err.message
     };
   }
 };
