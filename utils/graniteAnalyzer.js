@@ -4,34 +4,45 @@ const axios = require('axios');
 const path = require('path');
 const getIAMToken = require('./ibmAuth');
 
-const GRANITE_API_URL = 'https://us-south.ml.cloud.ibm.com/v2/inference';
-const GRANITE_MODEL_ID = 'granite-code-20b-instruct'; // Change if needed
+const GRANITE_API_URL = 'https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29';
+const GRANITE_MODEL_ID = 'ibm/granite-20b-code-instruct';
 const PROJECT_ID = process.env.IBM_PROJECT_ID;
 
+/**
+ * Build a system message prompt for ransomware analysis
+ * @param {string} filename - File name for context
+ * @param {string} fileContent - Code or log contents
+ * @returns {string}
+ */
 function buildRansomwarePrompt(filename, fileContent) {
   const safeContent = fileContent.slice(0, 4000);
-  return `You are a cybersecurity AI assistant.
+
+  return `You are an intelligent AI programming assistant.
 
 Analyze the following file: ${path.basename(filename)} for potential ransomware behavior.
 
-Check for:
+Look for:
 - Suspicious encryption routines
-- Renaming of files
-- File deletion patterns
-- Use of file system libraries for malicious purposes
-- Commands or code that could encrypt or lock files
-- Hardcoded ransom messages, IPs, suspicious links
+- File renaming or deletion
+- Use of filesystem APIs for malicious intent
+- Hardcoded IPs, ransom messages, URLs, or time bombs
 
 Return:
-- 🔒 Ransomware Threat Score (1 to 10)
-- ❌ Red Flags (list suspicious code behaviors)
-- 🧠 AI Suggestions (how to improve or secure it)
+- 🔒 Threat Score (1-10)
+- ❌ Suspicious patterns found
+- 🛡️ AI Suggestions to mitigate threats
 
 --- Begin Code ---
 ${safeContent}
 --- End Code ---`;
 }
 
+/**
+ * Calls IBM Watsonx Granite chat API to analyze a single file
+ * @param {string} filename
+ * @param {string} codeText
+ * @returns {Promise<Object>}
+ */
 module.exports = async function analyzeFileWithGranite(filename, codeText) {
   const prompt = buildRansomwarePrompt(filename, codeText);
   const accessToken = await getIAMToken();
@@ -41,34 +52,44 @@ module.exports = async function analyzeFileWithGranite(filename, codeText) {
       GRANITE_API_URL,
       {
         model_id: GRANITE_MODEL_ID,
-        input: [prompt],
-        parameters: {
-          decoding_method: "greedy",
-          max_new_tokens: 350
-        },
-        project_id: PROJECT_ID
+        project_id: PROJECT_ID,
+        messages: [
+          {
+            role: 'system',
+            content: prompt,
+          },
+        ],
+        temperature: 0,
+        top_p: 1,
+        max_tokens: 1000,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: [],
+        seed: null
       },
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        }
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
       }
     );
 
-    const output = response.data.results?.[0]?.generated_text || '[No response from model]';
+    const output = response.data?.results?.[0]?.generated_text || '[No output from model]';
 
     return {
       file: path.basename(filename),
       raw_prompt: prompt,
-      analysis: output
+      analysis: output,
     };
   } catch (err) {
     console.error('❌ Granite API error for file', filename, err.response?.data || err.message);
+
     return {
       file: path.basename(filename),
       analysis: '⚠️ Error calling Granite API',
-      error: err.response?.data || err.message
+      error: err.response?.data || err.message,
     };
   }
 };

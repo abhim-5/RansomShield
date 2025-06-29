@@ -1,26 +1,23 @@
 // 📁 /utils/ibmAuth.js
-// Handles IBM IAM token generation securely and efficiently
 
 const axios = require('axios');
 const qs = require('querystring');
 require('dotenv').config();
-console.log("🔍 IBM_API_KEY:", !!process.env.IBM_API_KEY ? "[OK]" : "[MISSING]");
+
 const IBM_API_KEY = process.env.IBM_API_KEY;
-const IBM_REGION = process.env.IBM_REGION || 'us-south';
 const IAM_URL = 'https://iam.cloud.ibm.com/identity/token';
 
 let cachedToken = null;
-let tokenExpiry = 0; // Epoch in ms
+let tokenExpiry = 0;
 
 /**
- * Generates or returns cached IBM IAM access token
- * Ensures we don't hit rate limits by caching valid tokens
+ * Gets a fresh IBM IAM token or returns cached token if valid.
  * @returns {Promise<string>} access_token
  */
 async function getIAMToken() {
   const now = Date.now();
   if (cachedToken && now < tokenExpiry - 60000) {
-    return cachedToken; // Token still valid, return it
+    return cachedToken;
   }
 
   try {
@@ -39,10 +36,10 @@ async function getIAMToken() {
 
     cachedToken = response.data.access_token;
     tokenExpiry = now + response.data.expires_in * 1000;
-    console.log('🔐 Fetched new IBM IAM token');
+    console.log('🔐 New IAM token acquired');
     return cachedToken;
   } catch (err) {
-    console.error('❌ IBM IAM token error:', err.response?.data || err.message);
+    console.error('❌ IAM token error:', err.response?.data || err.message);
     throw new Error('Failed to obtain IBM access token');
   }
 }

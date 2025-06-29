@@ -1,50 +1,57 @@
 // 📁 /utils/fileUtils.js
-// Utility to extract and filter valid code/log files for analysis
 
 const fs = require('fs-extra');
 const path = require('path');
 
-// 📜 Define valid file extensions to analyze
-const VALID_EXTENSIONS = ['.js', '.ts', '.py', '.sh', '.log', '.env', '.html', '.json', '.yml', '.yaml'];
+/**
+ * Allowed extensions for scanning (can be expanded as needed)
+ */
+const ALLOWED_EXTENSIONS = new Set([
+  '.js', '.py', '.java', '.cpp', '.c', '.cs',
+  '.log', '.txt', '.json', '.xml', '.sh',
+  '.env', '.conf', '.cfg', '.html', '.php'
+]);
 
 /**
- * Recursively walks through a directory and returns paths of all valid files
- * @param {string} dirPath - Root directory to start walking
- * @param {Array} fileList - Aggregator array
- * @returns {Promise<string[]>} Array of full file paths
+ * Recursively walk through a directory and collect file paths
+ * @param {string} dir - Directory to walk
+ * @returns {Promise<string[]>}
  */
-async function walkDirectory(dirPath, fileList = []) {
-  const entries = await fs.readdir(dirPath);
+async function walkDir(dir) {
+  let results = [];
 
-  for (const entry of entries) {
-    const fullPath = path.join(dirPath, entry);
-    const stat = await fs.stat(fullPath);
+  const list = await fs.readdir(dir);
+  for (const file of list) {
+    const filePath = path.join(dir, file);
+    const stat = await fs.stat(filePath);
 
-    if (stat.isDirectory()) {
-      await walkDirectory(fullPath, fileList); // Recurse
+    if (stat && stat.isDirectory()) {
+      const subDirFiles = await walkDir(filePath);
+      results = results.concat(subDirFiles);
     } else {
-      const ext = path.extname(fullPath).toLowerCase();
-      if (VALID_EXTENSIONS.includes(ext)) {
-        fileList.push(fullPath);
-      }
+      results.push(filePath);
     }
   }
-  return fileList;
+
+  return results;
 }
 
 /**
- * Extract and return all valid file paths in a directory for AI analysis
- * @param {string} extractPath - Path to extracted/unzipped directory
- * @returns {Promise<string[]>} Valid files to analyze
+ * Filters and returns only supported file types from a directory tree
+ * @param {string} extractPath - Path to unzipped directory
+ * @returns {Promise<string[]>}
  */
 async function extractAndFilterFiles(extractPath) {
-  try {
-    const validFiles = await walkDirectory(extractPath);
-    return validFiles;
-  } catch (err) {
-    console.error('❌ File filtering error:', err);
-    throw new Error('Failed to extract and filter valid files.');
-  }
+  const allFiles = await walkDir(extractPath);
+
+  const filtered = allFiles.filter(file => {
+    const ext = path.extname(file).toLowerCase();
+    return ALLOWED_EXTENSIONS.has(ext);
+  });
+
+  return filtered;
 }
 
-module.exports = { extractAndFilterFiles };
+module.exports = {
+  extractAndFilterFiles
+};
