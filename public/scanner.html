@@ -10,8 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-  <!-- GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -45,29 +44,30 @@
     const loader = document.getElementById("loader");
 
     form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      loader.style.display = "block";
+  e.preventDefault();
+  const formData = new FormData(form);
+  loader.style.display = "block";
 
-      try {
-        const res = await fetch("/api/scan", {
-          method: "POST",
-          body: formData
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          localStorage.setItem("ransomshield_report", JSON.stringify(result));
-          window.location.href = "result.html";
-        } else {
-          alert("Scan failed: " + result.error);
-          loader.style.display = "none";
-        }
-      } catch (err) {
-        alert("Upload error. Try again.");
-        loader.style.display = "none";
-      }
+  try {
+    const res = await fetch("https://ransomshield.onrender.com/api/scan", {
+      method: "POST",
+      body: formData
     });
+
+    const result = await res.json();
+
+    if (result.success) {
+      localStorage.setItem("ransomshield_report", JSON.stringify(result));
+      window.location.href = "result.html";
+    } else {
+      alert("Scan failed: " + result.error);
+      loader.style.display = "none";
+    }
+  } catch (err) {
+    alert("Upload error. Try again.");
+    loader.style.display = "none";
+  }
+});
   </script>
 
   <script src="main.js"></script>

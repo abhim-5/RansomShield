@@ -4,7 +4,7 @@
 const axios = require('axios');
 const qs = require('querystring');
 require('dotenv').config();
-
+console.log("🔍 IBM_API_KEY:", !!process.env.IBM_API_KEY ? "[OK]" : "[MISSING]");
 const IBM_API_KEY = process.env.IBM_API_KEY;
 const IBM_REGION = process.env.IBM_REGION || 'us-south';
 const IAM_URL = 'https://iam.cloud.ibm.com/identity/token';
