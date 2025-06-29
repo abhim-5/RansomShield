@@ -4,33 +4,31 @@ const axios = require('axios');
 const path = require('path');
 const getIAMToken = require('./ibmAuth');
 
+// IBM Watsonx endpoint and model info
 const GRANITE_API_URL = 'https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29';
-const GRANITE_MODEL_ID = 'ibm/granite-20b-code-instruct';
+const GRANITE_MODEL_ID = 'ibm/granite-3-8b-instruct'; // ✅ More stable than deprecated granite-20b
 const PROJECT_ID = process.env.IBM_PROJECT_ID;
 
 /**
- * Build a system message prompt for ransomware analysis
- * @param {string} filename - File name for context
- * @param {string} fileContent - Code or log contents
- * @returns {string}
+ * Builds a simplified prompt for ransomware risk analysis.
+ * @param {string} filename - Name of the file for context
+ * @param {string} fileContent - The code or text content of the file
+ * @returns {string} - Prompt to send to the LLM
  */
 function buildRansomwarePrompt(filename, fileContent) {
-  const safeContent = fileContent.slice(0, 4000);
+  const safeContent = fileContent.slice(0, 4000); // Token safety
 
-  return `You are an intelligent AI programming assistant.
+  return `You are a cybersecurity AI assistant. Analyze the following code from "${path.basename(filename)}" for ransomware behavior.
 
-Analyze the following file: ${path.basename(filename)} for potential ransomware behavior.
-
-Look for:
-- Suspicious encryption routines
-- File renaming or deletion
-- Use of filesystem APIs for malicious intent
-- Hardcoded IPs, ransom messages, URLs, or time bombs
+Focus on:
+- File deletion, encryption routines, or renaming
+- Suspicious filesystem commands
+- Hardcoded ransom messages or IP addresses
 
 Return:
-- 🔒 Threat Score (1-10)
-- ❌ Suspicious patterns found
-- 🛡️ AI Suggestions to mitigate threats
+- 🔒 Threat Score (1–10)
+- ❌ Detected red flags
+- ✅ Suggested mitigations
 
 --- Begin Code ---
 ${safeContent}
@@ -38,7 +36,7 @@ ${safeContent}
 }
 
 /**
- * Calls IBM Watsonx Granite chat API to analyze a single file
+ * Calls IBM Watsonx Granite Chat API to evaluate a file
  * @param {string} filename
  * @param {string} codeText
  * @returns {Promise<Object>}
@@ -76,7 +74,18 @@ module.exports = async function analyzeFileWithGranite(filename, codeText) {
       }
     );
 
-    const output = response.data?.results?.[0]?.generated_text || '[No output from model]';
+    console.log(`🧠 Granite response for: ${filename}`);
+    console.dir(response.data, { depth: null });
+
+    const output = response.data?.results?.[0]?.generated_text;
+
+    if (!output || output.trim() === '') {
+      return {
+        file: path.basename(filename),
+        raw_prompt: prompt,
+        analysis: '⚠️ Granite returned empty output. Try simplifying the input file.',
+      };
+    }
 
     return {
       file: path.basename(filename),
@@ -85,7 +94,6 @@ module.exports = async function analyzeFileWithGranite(filename, codeText) {
     };
   } catch (err) {
     console.error('❌ Granite API error for file', filename, err.response?.data || err.message);
-
     return {
       file: path.basename(filename),
       analysis: '⚠️ Error calling Granite API',
