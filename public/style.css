@@ -1,0 +1,207 @@
+/* 📁 /public/styles.css */
+/* RansomShield Cyberpunk Interface - Futuristic UI Styling */
+
+:root {
+  --bg-dark: #0d0d0d;
+  --neon-green: #39ff14;
+  --neon-blue: #00f0ff;
+  --glass-white: rgba(255, 255, 255, 0.1);
+  --cyber-gradient: linear-gradient(135deg, #00f0ff, #39ff14);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Orbitron', sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: white;
+  overflow-x: hidden;
+}
+
+/* Custom Cursor */
+.custom-cursor {
+  position: fixed;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--neon-green);
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Navbar */
+.cyber-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: var(--glass-white);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--neon-green);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 999;
+}
+
+.logo {
+  font-size: 1.8rem;
+  color: var(--neon-green);
+}
+
+.logo span {
+  color: var(--neon-blue);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--neon-green);
+  text-shadow: 0 0 8px var(--neon-green);
+}
+
+/* Hero Section */
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 2rem;
+  background: url('https://i.ibb.co/7j4J0Cg/tech-bg.gif') no-repeat center center/cover;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green);
+}
+
+.hero .subheading {
+  font-size: 1.5rem;
+  color: #ccc;
+  margin: 1rem 0;
+  letter-spacing: 1px;
+}
+
+.cta-button {
+  padding: 0.8rem 2rem;
+  border: 2px solid var(--neon-blue);
+  background: transparent;
+  color: var(--neon-blue);
+  font-size: 1rem;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cta-button:hover {
+  background: var(--neon-blue);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-blue);
+}
+
+/* Features */
+.features {
+  padding: 5rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(5px);
+  text-align: center;
+}
+
+.features h2 {
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  color: var(--neon-green);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+}
+
+.feature-card {
+  background: var(--glass-white);
+  padding: 2rem;
+  border: 1px solid var(--neon-green);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 255, 170, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s;
+  text-align: center;
+  width: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 25px var(--neon-green);
+}
+
+.feature-card i {
+  font-size: 3rem;
+  color: var(--neon-blue);
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  margin-bottom: 1rem;
+  color: var(--neon-green);
+}
+
+/* Contact */
+.contact {
+  padding: 5rem 2rem;
+  text-align: center;
+  background: #000000;
+}
+
+.contact h2 {
+  font-size: 2rem;
+  color: var(--neon-blue);
+  margin-bottom: 1rem;
+}
+
+.contact-button {
+  background: transparent;
+  border: 2px solid var(--neon-green);
+  color: var(--neon-green);
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  transition: 0.3s;
+  text-decoration: none;
+}
+
+.contact-button:hover {
+  background: var(--neon-green);
+  color: #000;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2rem;
+  background: #070707;
+  border-top: 1px solid var(--neon-green);
+  color: #777;
+  font-size: 0.9rem;
+}
